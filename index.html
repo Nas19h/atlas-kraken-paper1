@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas Kraken Paper Trader V2.2</title>
+<title>Atlas Kraken Paper Trader V2.3</title>
 <style>
 :root {
   color-scheme:dark;
@@ -14,7 +14,7 @@
 }
 *{box-sizing:border-box}
 body{margin:0;padding:16px;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
-main{max-width:950px;margin:auto}
+main{max-width:1000px;margin:auto}
 h1{font-size:25px;margin:0 0 7px}
 h2{font-size:17px;margin:0 0 14px}
 p{color:var(--muted);line-height:1.5}
@@ -27,7 +27,7 @@ p{color:var(--muted);line-height:1.5}
 .metric{background:var(--panel2);border-radius:9px;padding:12px;min-width:0}
 .metric small{color:var(--muted);display:block;margin-bottom:7px}
 .metric strong{font-size:19px;overflow-wrap:anywhere}
-.price-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.price-row{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
 .price-row:last-child{border:0}
 button{border:0;border-radius:9px;padding:13px 14px;font-weight:bold;font-size:14px;cursor:pointer;margin:4px 3px 4px 0}
 button:disabled{opacity:.4;cursor:not-allowed}
@@ -40,7 +40,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{text-align:left;padding:10px 5px;border-bottom:1px solid var(--border);white-space:nowrap}
 th{color:var(--muted)}
 .scroll{overflow-x:auto}
-#log{max-height:220px;overflow:auto;font-size:12px;line-height:1.7;color:var(--muted)}
+#log{max-height:240px;overflow:auto;font-size:12px;line-height:1.7;color:var(--muted)}
+.position-card{background:var(--panel2);padding:13px;border-radius:9px;margin:10px 0;font-size:13px;line-height:1.8}
+.small{font-size:12px;color:var(--muted)}
 @media(min-width:650px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
 </head>
@@ -49,16 +51,17 @@ th{color:var(--muted)}
 
 <header>
 <h1>Atlas / Kraken Paper Trader</h1>
-<div class="tag">VERSION 2.2 · ACTIVE TWO-WAY SCALPER</div>
+<div class="tag">VERSION 2.3 · HIGH FREQUENCY PAPER SCALPER</div>
 <p>BTC/USD · ETH/USD · SOL/USD</p>
 <div id="connection" class="status">Price feed: Disconnected</div>
 <div id="strategyStatus" class="status">Strategy: PAUSED</div>
 </header>
 
 <div class="warning">
-<strong>PAPER TRADING ONLY.</strong> Atlas uses public Kraken prices and virtual funds.
-It does not access your Kraken account, use private API keys or place real orders.
-Trading signals are experimental and profits are not guaranteed.
+<strong>PAPER TRADING ONLY.</strong>
+Atlas uses public Kraken prices and virtual funds.
+It does not access your Kraken account, use private API keys
+or place real orders. Signals and simulated profits are experimental.
 </div>
 
 <section class="panel">
@@ -67,8 +70,9 @@ Trading signals are experimental and profits are not guaranteed.
 <div class="metric"><small>Available balance</small><strong id="balance">$10,000.00</strong></div>
 <div class="metric"><small>Total equity</small><strong id="equity">$10,000.00</strong></div>
 <div class="metric"><small>Today's net P/L</small><strong id="daily">$0.00</strong></div>
-<div class="metric"><small>Entries today</small><strong id="tradeCount">0 / 12</strong></div>
+<div class="metric"><small>Entries today</small><strong id="tradeCount">0 / 30</strong></div>
 </div>
+<p id="openSummary">Open positions: 0 / 3</p>
 </section>
 
 <section class="panel">
@@ -83,7 +87,7 @@ Trading signals are experimental and profits are not guaranteed.
 
 <section class="panel">
 <h2>Strategy controls</h2>
-<button class="green" id="startBtn" onclick="startStrategy()" disabled>Activate paper strategy</button>
+<button class="green" id="startBtn" onclick="startStrategy()" disabled>Activate Atlas V2.3</button>
 <button class="secondary" onclick="pauseStrategy()">Pause strategy</button>
 <button class="red" onclick="emergencyStop()">EMERGENCY STOP</button>
 <p id="strategyMessage">Paused. No new positions will be opened.</p>
@@ -92,34 +96,38 @@ Trading signals are experimental and profits are not guaranteed.
 <section class="panel">
 <h2>Risk management</h2>
 <div class="grid">
-<div class="metric"><small>Maximum allocation</small><strong>$500</strong></div>
-<div class="metric"><small>Maximum planned risk</small><strong>$25</strong></div>
+<div class="metric"><small>Maximum allocation per trade</small><strong>$500</strong></div>
+<div class="metric"><small>Maximum open positions</small><strong>3</strong></div>
+<div class="metric"><small>Planned risk per trade</small><strong>$5</strong></div>
 <div class="metric"><small>Daily loss limit</small><strong>$100</strong></div>
-<div class="metric"><small>Maximum entries</small><strong>12 / day</strong></div>
+<div class="metric"><small>Daily entry limit</small><strong>30</strong></div>
+<div class="metric"><small>Stop-loss</small><strong>0.35%</strong></div>
+<div class="metric"><small>Price checking</small><strong>5 sec</strong></div>
+<div class="metric"><small>Cooldown per coin</small><strong>45 sec</strong></div>
 </div>
-<p>Target: 0.8% · Stop: 0.4% · Cooldown: 3 minutes</p>
-<p>One open position maximum. Both long and short paper trades are enabled.</p>
-<p>Estimated trading fee: 0.26% per side. Simulated slippage: 0.05% per side.</p>
+<p>Flexible net-profit trailing. No fixed take-profit. One position per coin maximum.</p>
+<p>Estimated fee: 0.26% per side. Simulated slippage: 0.05% per side.</p>
+<p class="small">Risk estimates are not guaranteed. Gaps, delayed data and execution differences can cause larger losses.</p>
 </section>
 
 <section class="panel">
-<h2>Market signals</h2>
-<div id="signals">
-<p>Waiting for enough price history to calculate signals.</p>
-</div>
+<h2>Live market signals</h2>
+<div id="signals"><p>Collecting price history...</p></div>
 </section>
 
 <section class="panel">
-<h2>Open paper position</h2>
-<div id="position">No open position.</div>
-<button class="red" onclick="closePosition('Manual exit')">Close position</button>
+<h2>Open paper positions</h2>
+<div id="positions"><p>No open positions.</p></div>
+<button class="red" onclick="closeAllPositions('Manual exit')">Close ALL positions</button>
 </section>
 
 <section class="panel">
 <h2>Trade history</h2>
 <div class="scroll">
 <table>
-<thead><tr><th>Asset</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Net P/L</th><th>Reason</th></tr></thead>
+<thead>
+<tr><th>Asset</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Net P/L</th><th>Reason</th></tr>
+</thead>
 <tbody id="history"><tr><td colspan="6">No completed trades.</td></tr></tbody>
 </table>
 </div>
@@ -127,13 +135,13 @@ Trading signals are experimental and profits are not guaranteed.
 
 <section class="panel">
 <h2>Activity log</h2>
-<div id="log">Atlas V2.2 initialised. Paper strategy paused.</div>
+<div id="log">Atlas V2.3 initialised. Paper strategy paused.</div>
 </section>
 
 <section class="panel">
 <h2>Reset paper account</h2>
 <button class="secondary" onclick="resetAccount()">Reset virtual account</button>
-<p>This clears the balance, open position, daily counters and trade history.</p>
+<p>This clears the virtual balance, positions, counters and history.</p>
 </section>
 
 </main>
@@ -141,123 +149,149 @@ Trading signals are experimental and profits are not guaranteed.
 <script>
 "use strict";
 
+/* ATLAS V2.3 CONFIG */
+
 const CONFIG = {
   startingBalance:10000,
   allocation:500,
-  maxRisk:25,
+  maxOpenPositions:3,
+  maxRisk:5,
   dailyLossLimit:100,
-  maxTradesPerDay:12,
-  stopPercent:0.004,
-  targetPercent:0.008,
+  maxTradesPerDay:30,
+  stopPercent:0.0035,
   feePercent:0.0026,
   slippagePercent:0.0005,
-  cooldownMs:180000,
   pollMs:5000,
-  historyRequired:48
+  cooldownMs:45000,
+  historyRequired:24,
+  fastPeriod:6,
+  slowPeriod:24,
+  momentumPeriod:6,
+  profitActivation:0.25,
+  profitGiveback:0.30,
+  minimumProfitFloor:0.10
 };
 
 const ASSETS = {
-  BTC:["XXBTZUSD","XBTUSD","BTCUSD"],
+  BTC:["XXBTZUSD","XBTUSD"],
   ETH:["XETHZUSD","ETHUSD"],
-  SOL:["SOLUSD","SOL/USD"]
+  SOL:["SOLUSD"]
 };
+
+/* ACCOUNT STATE */
 
 let balance=CONFIG.startingBalance;
 let prices={};
 let samples={BTC:[],ETH:[],SOL:[]};
-let signals={BTC:"Collecting data",ETH:"Collecting data",SOL:"Collecting data"};
+let signals={
+  BTC:"Collecting data",
+  ETH:"Collecting data",
+  SOL:"Collecting data"
+};
+
 let connected=false;
 let running=false;
 let timer=null;
-let position=null;
+let positions={};
 let history=[];
 let dailyPnL=0;
 let tradesToday=0;
-let cooldownUntil=0;
+let nextEntryAt={BTC:0,ETH:0,SOL:0};
 let dayKey=new Date().toDateString();
-let lastEntryAsset=null;
-let lastEntryDirection=null;
+
+/* HELPERS */
 
 function money(n){
   return "$"+Number(n).toFixed(2);
 }
+
+function average(a){
+  return a.reduce((x,y)=>x+y,0)/a.length;
+}
+
 function log(message){
   const box=document.getElementById("log");
   const line=document.createElement("div");
   line.textContent=new Date().toLocaleTimeString()+" — "+message;
   box.prepend(line);
 }
-function average(a){
-  return a.reduce((x,y)=>x+y,0)/a.length;
+
+function openPositionCount(){
+  return Object.keys(positions).length;
 }
+
+function unrealisedPnL(){
+  let total=0;
+  for(const asset of Object.keys(positions)){
+    if(prices[asset]){
+      total+=calculatePnL(positions[asset],prices[asset]);
+    }
+  }
+  return total;
+}
+
+function totalDailyPnL(){
+  return dailyPnL+unrealisedPnL();
+}
+
+/* DISPLAY */
+
 function updateDisplay(){
+
   document.getElementById("balance").textContent=money(balance);
-  const unreal=position&&prices[position.asset]
-    ? calculatePnL(position,prices[position.asset]) : 0;
-  document.getElementById("equity").textContent=
-    money(balance+(position?position.allocation:0)+unreal);
+
+  document.getElementById("equity").textContent=money(
+    balance+
+    Object.values(positions).reduce((sum,p)=>sum+p.allocation,0)+
+    unrealisedPnL()
+  );
 
   const daily=document.getElementById("daily");
-  daily.textContent=money(dailyPnL);
-  daily.className=dailyPnL>=0?"good":"bad";
+  daily.textContent=money(totalDailyPnL());
+  daily.className=totalDailyPnL()>=0?"good":"bad";
 
   document.getElementById("tradeCount").textContent=
     tradesToday+" / "+CONFIG.maxTradesPerDay;
 
+  document.getElementById("openSummary").textContent=
+    "Open positions: "+openPositionCount()+" / "+CONFIG.maxOpenPositions;
+
   document.getElementById("strategyStatus").textContent=
     "Strategy: "+(running?"ACTIVE":"PAUSED");
+
   document.getElementById("strategyStatus").className=
     "status "+(running?"good":"");
 
   document.getElementById("connectBtn").disabled=connected;
-  document.getElementById("startBtn").disabled=!connected||running||
-    dailyPnL<=-CONFIG.dailyLossLimit||tradesToday>=CONFIG.maxTradesPerDay;
 
-  if(!position){
-    document.getElementById("position").textContent="No open position.";
-  }else{
-    const current=prices[position.asset]||position.entry;
-    const pnl=calculatePnL(position,current);
-    document.getElementById("position").innerHTML=
-      "<strong>"+position.asset+" / USD — "+
-      position.direction.toUpperCase()+"</strong><br>"+
-      "Entry: "+money(position.entry)+"<br>"+
-      "Current market price: "+money(current)+"<br>"+
-      "Stop: "+money(position.stop)+"<br>"+
-      "Target: "+money(position.target)+"<br>"+
-      "Allocation: "+money(position.allocation)+"<br>"+
-      "Estimated net P/L: "+money(pnl);
-  }
+  document.getElementById("startBtn").disabled=
+    !connected||running||
+    totalDailyPnL()<=-CONFIG.dailyLossLimit||
+    tradesToday>=CONFIG.maxTradesPerDay;
 
+  renderPositions();
   renderSignals();
 }
+
+/* DAILY RESET */
+
 function checkNewDay(){
   const today=new Date().toDateString();
+
   if(today!==dayKey){
     dayKey=today;
     dailyPnL=0;
     tradesToday=0;
-    log("New day: daily counters reset.");
+    nextEntryAt={BTC:0,ETH:0,SOL:0};
+    log("New day. Daily counters reset.");
     updateDisplay();
   }
 }
-function renderSignals(){
-  const box=document.getElementById("signals");
-  box.innerHTML="";
-  for(const asset of Object.keys(ASSETS)){
-    const row=document.createElement("div");
-    row.className="price-row";
-    const left=document.createElement("span");
-    left.textContent=asset;
-    const right=document.createElement("strong");
-    right.textContent=signals[asset];
-    right.className=signals[asset].includes("LONG")?"good":
-      signals[asset].includes("SHORT")?"bad":"";
-    row.append(left,right);
-    box.appendChild(row);
-  }
-}
+
+/* PRICE FEED */
+
 async function fetchPrices(){
+
   const response=await fetch(
     "https://api.kraken.com/0/public/Ticker?pair=XBTUSD,ETHUSD,SOLUSD"
   );
@@ -267,27 +301,18 @@ async function fetchPrices(){
   const data=await response.json();
 
   if(data.error&&data.error.length){
-    throw Error(data.error.join(","));
+    throw Error(data.error.join(", "));
   }
 
   const result=data.result;
 
-  const pairMap={
-    BTC:["XXBTZUSD","XBTUSD","BTCUSD"],
-    ETH:["XETHZUSD","ETHUSD","XETHUSD"],
-    SOL:["SOLUSD","SOL/USD"]
-  };
+  for(const asset of Object.keys(ASSETS)){
 
-  for(const asset of Object.keys(pairMap)){
-    const key=Object.keys(result).find(k=>{
-      const name=k.toUpperCase();
-      return pairMap[asset].some(alias=>
-        name===alias.toUpperCase()
-      ) ||
-      (asset==="BTC"&&name.includes("XBT")) ||
-      (asset==="ETH"&&name.includes("ETH")) ||
-      (asset==="SOL"&&name.includes("SOL"));
-    });
+    const aliases=ASSETS[asset];
+
+    const key=Object.keys(result).find(k=>
+      aliases.some(alias=>k.toUpperCase()===alias.toUpperCase())
+    );
 
     if(!key)continue;
 
@@ -307,279 +332,639 @@ async function fetchPrices(){
     "Last price update: "+new Date().toLocaleTimeString();
 
   checkNewDay();
-  managePosition();
   calculateSignals();
+  managePositions();
+  enforceDailyLossLimit();
 
-  if(running)lookForEntry();
+  if(running)lookForEntries();
 
   updateDisplay();
 }
-}
+
+/* CONNECTION */
+
 async function connectPrices(){
+
   if(connected)return;
-  document.getElementById("connection").textContent="Price feed: Connecting...";
+
+  document.getElementById("connection").textContent=
+    "Price feed: Connecting...";
+
   try{
+
     await fetchPrices();
+
     connected=true;
+
     timer=setInterval(async()=>{
-      try{await fetchPrices();}
-      catch(e){
+
+      try{
+        await fetchPrices();
+      }catch(e){
         log("Price update failed: "+e.message);
         document.getElementById("connection").textContent=
           "Price feed: Update error";
+        document.getElementById("connection").className="status bad";
       }
+
     },CONFIG.pollMs);
+
     document.getElementById("connection").textContent=
       "Price feed: Connected to public Kraken data";
+
     document.getElementById("connection").className="status good";
-    log("Live public price feed connected. Strategy remains paused.");
+
+    log("Kraken public price feed connected.");
+
     updateDisplay();
+
   }catch(e){
-    document.getElementById("connection").textContent="Price feed: Connection failed";
+
+    document.getElementById("connection").textContent=
+      "Price feed: Connection failed";
+
     document.getElementById("connection").className="status bad";
+
     log("Connection failed: "+e.message);
   }
 }
+
 function disconnectPrices(){
+
   if(timer)clearInterval(timer);
+
   timer=null;
   connected=false;
   running=false;
-  document.getElementById("connection").textContent="Price feed: Disconnected";
+
+  document.getElementById("connection").textContent=
+    "Price feed: Disconnected";
+
   document.getElementById("connection").className="status";
+
   document.getElementById("strategyMessage").textContent=
-    "Disconnected. Strategy paused.";
-  log("Price feed disconnected. Strategy paused.");
-  updateDisplay();
-}
-function startStrategy(){
-  if(!connected){alert("Connect live prices first.");return;}
-  if(dailyPnL<=-CONFIG.dailyLossLimit){alert("Daily loss limit reached.");return;}
-  if(tradesToday>=CONFIG.maxTradesPerDay){alert("Daily trade limit reached.");return;}
-  running=true;
-  document.getElementById("strategyMessage").textContent=
-    "Active: searching for long and short opportunities.";
-  log("Active two-way paper strategy started.");
-  updateDisplay();
-}
-function pauseStrategy(){
-  running=false;
-  document.getElementById("strategyMessage").textContent=
-    "Paused. Any existing position remains open.";
-  log("Strategy paused. Existing position retained.");
-  updateDisplay();
-}
-function emergencyStop(){
-  running=false;
-  if(position&&prices[position.asset])closePosition("Emergency stop");
-  document.getElementById("strategyMessage").textContent=
-    "Emergency stop activated. Strategy disabled.";
-  log("Emergency stop activated.");
+    "Disconnected. Strategy paused. Existing positions retained.";
+
+  log("Disconnected. Strategy paused.");
+
   updateDisplay();
 }
 
-/*
-  Signal method:
-  Compares a short average with a longer average and checks
-  recent price momentum. It is an experimental signal, not a
-  proven trading system or a prediction of future prices.
-*/
+/* STRATEGY CONTROLS */
+
+function startStrategy(){
+
+  if(!connected){
+    alert("Connect Kraken prices first.");
+    return;
+  }
+
+  if(totalDailyPnL()<=-CONFIG.dailyLossLimit){
+    alert("Daily loss limit reached.");
+    return;
+  }
+
+  if(tradesToday>=CONFIG.maxTradesPerDay){
+    alert("Daily entry limit reached.");
+    return;
+  }
+
+  running=true;
+
+  document.getElementById("strategyMessage").textContent=
+    "ACTIVE: Searching BTC, ETH and SOL independently.";
+
+  log("Atlas V2.3 activated.");
+
+  updateDisplay();
+}
+
+function pauseStrategy(){
+
+  running=false;
+
+  document.getElementById("strategyMessage").textContent=
+    "Paused. Existing positions remain open.";
+
+  log("Strategy paused.");
+
+  updateDisplay();
+}
+
+function emergencyStop(){
+
+  running=false;
+
+  document.getElementById("strategyMessage").textContent=
+    "Emergency stop activated. Closing positions where prices are available.";
+
+  closeAllPositions("Emergency stop");
+
+  log("Emergency stop activated.");
+
+  updateDisplay();
+}
+
+/* SIGNAL ENGINE */
+
 function calculateSignals(){
+
   for(const asset of Object.keys(ASSETS)){
+
     const values=samples[asset].map(x=>x.price);
+
     if(values.length<CONFIG.historyRequired){
       signals[asset]="Collecting price history";
       continue;
     }
-    const fast=average(values.slice(-12));
-    const slow=average(values.slice(-48));
-    const earlier=values[values.length-13];
+
+    const fast=average(values.slice(-CONFIG.fastPeriod));
+    const slow=average(values.slice(-CONFIG.slowPeriod));
+
+    const earlier=values[values.length-1-CONFIG.momentumPeriod];
     const latest=values[values.length-1];
+
     const momentum=(latest-earlier)/earlier;
 
-    if(fast>slow*1.00015&&momentum>0.00025&&latest>fast){
+    if(
+      fast>slow*1.0001&&
+      momentum>0.00015&&
+      latest>fast
+    ){
       signals[asset]="Potential LONG";
-    }else if(fast<slow*0.99985&&momentum< -0.00025&&latest<fast){
+
+    }else if(
+      fast<slow*0.9999&&
+      momentum< -0.00015&&
+      latest<fast
+    ){
       signals[asset]="Potential SHORT";
+
     }else{
       signals[asset]="Watching — no clear signal";
     }
   }
 }
-function lookForEntry(){
-  checkNewDay();
-  if(!running||position)return;
-  if(dailyPnL<=-CONFIG.dailyLossLimit){
-    running=false;
-    log("Daily loss limit reached. Strategy automatically paused.");
-    updateDisplay();
+
+function renderSignals(){
+
+  const box=document.getElementById("signals");
+  box.innerHTML="";
+
+  for(const asset of Object.keys(ASSETS)){
+
+    const row=document.createElement("div");
+    row.className="price-row";
+
+    const left=document.createElement("span");
+    left.textContent=asset;
+
+    const right=document.createElement("strong");
+    right.textContent=signals[asset];
+
+    right.className=
+      signals[asset].includes("LONG")?"good":
+      signals[asset].includes("SHORT")?"bad":"";
+
+    row.append(left,right);
+    box.appendChild(row);
+  }
+}
+
+/* ENTRY ENGINE */
+
+function lookForEntries(){
+
+  if(!running)return;
+
+  if(totalDailyPnL()<=-CONFIG.dailyLossLimit){
+    enforceDailyLossLimit();
     return;
   }
+
   if(tradesToday>=CONFIG.maxTradesPerDay){
     running=false;
-    log("Maximum daily entries reached. Strategy paused.");
-    updateDisplay();
+    log("Maximum daily entries reached.");
     return;
   }
-  if(Date.now()<cooldownUntil)return;
+
+  if(openPositionCount()>=CONFIG.maxOpenPositions)return;
 
   const candidates=[];
-  for(const asset of Object.keys(ASSETS)){
-    if(!prices[asset])continue;
-    if(signals[asset]==="Potential LONG")candidates.push({asset,direction:"long"});
-    if(signals[asset]==="Potential SHORT")candidates.push({asset,direction:"short"});
-  }
-  if(!candidates.length)return;
 
-  // Prefer the strongest recent percentage move.
+  for(const asset of Object.keys(ASSETS)){
+
+    if(!prices[asset])continue;
+    if(positions[asset])continue;
+    if(Date.now()<nextEntryAt[asset])continue;
+
+    if(signals[asset]==="Potential LONG"){
+      candidates.push({asset,direction:"long"});
+    }else if(signals[asset]==="Potential SHORT"){
+      candidates.push({asset,direction:"short"});
+    }
+  }
+
   candidates.sort((a,b)=>{
-    const score=x=>{
-      const s=samples[x.asset];
-      return Math.abs((s[s.length-1].price-s[s.length-13].price)/
-        s[s.length-13].price);
-    };
+
+    function score(x){
+      const values=samples[x.asset].map(v=>v.price);
+      const old=values[values.length-1-CONFIG.momentumPeriod];
+      const latest=values[values.length-1];
+      return Math.abs((latest-old)/old);
+    }
+
     return score(b)-score(a);
   });
 
-  const choice=candidates[0];
-  if(choice.asset===lastEntryAsset&&choice.direction===lastEntryDirection)return;
-  openPosition(choice.asset,choice.direction,prices[choice.asset]);
-}
-function openPosition(asset,direction,marketPrice){
-  if(!running||position||tradesToday>=CONFIG.maxTradesPerDay)return;
-  if(dailyPnL<=-CONFIG.dailyLossLimit)return;
+  for(const choice of candidates){
 
-  const allocation=Math.min(CONFIG.allocation,balance);
+    if(openPositionCount()>=CONFIG.maxOpenPositions)break;
+    if(tradesToday>=CONFIG.maxTradesPerDay)break;
+
+    openPosition(choice.asset,choice.direction,prices[choice.asset]);
+  }
+}
+
+/* OPEN POSITION */
+
+function openPosition(asset,direction,marketPrice){
+
+  if(!running||positions[asset])return;
+  if(openPositionCount()>=CONFIG.maxOpenPositions)return;
+  if(tradesToday>=CONFIG.maxTradesPerDay)return;
+  if(totalDailyPnL()<=-CONFIG.dailyLossLimit)return;
+
+  const estimatedCostRate=
+    CONFIG.stopPercent+
+    CONFIG.feePercent*2+
+    CONFIG.slippagePercent*2;
+
+  const riskAllocation=CONFIG.maxRisk/estimatedCostRate;
+
+  const allocation=Math.min(
+    CONFIG.allocation,
+    balance,
+    riskAllocation
+  );
+
   if(allocation<=0)return;
 
-  const riskAllocation=CONFIG.maxRisk/CONFIG.stopPercent;
-  const actualAllocation=Math.min(allocation,riskAllocation);
   const entry=direction==="long"
     ?marketPrice*(1+CONFIG.slippagePercent)
     :marketPrice*(1-CONFIG.slippagePercent);
-  const quantity=actualAllocation/entry;
 
-  position={
-    asset,direction,entry,quantity,
-    allocation:actualAllocation,
-    stop:direction==="long"
-      ?entry*(1-CONFIG.stopPercent)
-      :entry*(1+CONFIG.stopPercent),
-    target:direction==="long"
-      ?entry*(1+CONFIG.targetPercent)
-      :entry*(1-CONFIG.targetPercent),
-    openedAt:Date.now()
+  const quantity=allocation/entry;
+
+  const stop=direction==="long"
+    ?entry*(1-CONFIG.stopPercent)
+    :entry*(1+CONFIG.stopPercent);
+
+  positions[asset]={
+    asset,
+    direction,
+    entry,
+    quantity,
+    allocation,
+    stop,
+    openedAt:Date.now(),
+    peakNetPnL:0,
+    profitActivated:false
   };
 
-  balance-=actualAllocation;
+  balance-=allocation;
   tradesToday++;
-  lastEntryAsset=asset;
-  lastEntryDirection=direction;
 
-  log("PAPER "+direction.toUpperCase()+" "+asset+
-    " at "+money(entry)+". Reserved "+money(actualAllocation)+".");
+  nextEntryAt[asset]=Date.now()+CONFIG.cooldownMs;
+
+  log(
+    "PAPER "+direction.toUpperCase()+" "+asset+
+    " opened at "+money(entry)+
+    ". Allocation "+money(allocation)+"."
+  );
+
   updateDisplay();
 }
+
+/* NET PROFIT */
+
 function calculatePnL(pos,marketExit){
+
   const exit=pos.direction==="long"
     ?marketExit*(1-CONFIG.slippagePercent)
     :marketExit*(1+CONFIG.slippagePercent);
+
   const gross=pos.direction==="long"
     ?(exit-pos.entry)*pos.quantity
     :(pos.entry-exit)*pos.quantity;
-  const fees=(pos.entry*pos.quantity+exit*pos.quantity)*CONFIG.feePercent;
-  return gross-fees;
+
+  const entryFee=pos.entry*pos.quantity*CONFIG.feePercent;
+  const exitFee=exit*pos.quantity*CONFIG.feePercent;
+
+  return gross-entryFee-exitFee;
 }
-function managePosition(){
-  if(!position)return;
-  const market=prices[position.asset];
-  if(!market)return;
 
-  const stopped=position.direction==="long"
-    ?market<=position.stop:market>=position.stop;
-  const targeted=position.direction==="long"
-    ?market>=position.target:market<=position.target;
+/* POSITION MANAGEMENT */
 
-  if(stopped)closePosition("Stop loss");
-  else if(targeted)closePosition("Take profit");
+function managePositions(){
+
+  /*
+    Safety correction:
+    Work from a snapshot of asset names and verify
+    each position still exists before using it.
+    This prevents errors when another function closes
+    a position during the same management cycle.
+  */
+
+  const assets=Object.keys(positions);
+
+  for(const asset of assets){
+
+    const pos=positions[asset];
+
+    if(!pos)continue;
+
+    const market=prices[asset];
+
+    if(!market)continue;
+
+    const pnl=calculatePnL(pos,market);
+
+    const stopped=pos.direction==="long"
+      ?market<=pos.stop
+      :market>=pos.stop;
+
+    if(stopped){
+
+      closePosition(asset,"Stop loss");
+      continue;
+    }
+
+    if(pnl>=CONFIG.profitActivation){
+
+      pos.profitActivated=true;
+
+      pos.peakNetPnL=Math.max(
+        pos.peakNetPnL,
+        pnl
+      );
+    }
+
+    if(
+      pos.profitActivated&&
+      pnl<=Math.max(
+        CONFIG.minimumProfitFloor,
+        pos.peakNetPnL*(1-CONFIG.profitGiveback)
+      )
+    ){
+
+      closePosition(asset,"Flexible profit lock");
+      continue;
+    }
+
+    const opposite=
+      (pos.direction==="long"&&signals[asset]==="Potential SHORT")||
+      (pos.direction==="short"&&signals[asset]==="Potential LONG");
+
+    if(opposite&&pnl>=CONFIG.profitActivation){
+
+      closePosition(asset,"Opposite signal with net profit");
+    }
+  }
 }
-function closePosition(reason){
-  if(!position)return;
-  const market=prices[position.asset];
-  if(!market){log("Waiting for a current price before closing.");return;}
 
-  const closed=position;
-  const pnl=calculatePnL(closed,market);
-  balance+=closed.allocation+pnl;
+/* CLOSE POSITION */
+
+function closePosition(asset,reason){
+
+  const pos=positions[asset];
+
+  if(!pos)return;
+
+  const market=prices[asset];
+
+  if(!market){
+    log("Cannot close "+asset+": no current price.");
+    return;
+  }
+
+  const pnl=calculatePnL(pos,market);
+
+  balance+=pos.allocation+pnl;
   dailyPnL+=pnl;
 
   history.unshift({
-    asset:closed.asset,
-    direction:closed.direction,
-    entry:closed.entry,
+    asset:pos.asset,
+    direction:pos.direction,
+    entry:pos.entry,
     exit:market,
     pnl,
     reason
   });
 
-  position=null;
-  cooldownUntil=Date.now()+CONFIG.cooldownMs;
+  delete positions[asset];
+
+  nextEntryAt[asset]=Date.now()+CONFIG.cooldownMs;
+
   renderHistory();
 
-  log("PAPER "+closed.direction.toUpperCase()+" closed: "+
-    closed.asset+". "+reason+". Net result "+money(pnl));
+  log(
+    pos.asset+" "+pos.direction.toUpperCase()+
+    " closed. "+reason+". Net P/L: "+money(pnl)
+  );
 
-  if(dailyPnL<=-CONFIG.dailyLossLimit){
-    running=false;
-    log("Daily loss limit reached. Strategy automatically paused.");
-    document.getElementById("strategyMessage").textContent=
-      "Daily loss limit reached. Strategy paused.";
-  }
   updateDisplay();
 }
+
+function closeAllPositions(reason){
+
+  const assets=Object.keys(positions);
+
+  for(const asset of assets){
+
+    if(positions[asset]&&prices[asset]){
+      closePosition(asset,reason);
+    }
+  }
+}
+
+/* DAILY LOSS PROTECTION */
+
+let lossProtectionActive=false;
+
+function enforceDailyLossLimit(){
+
+  if(lossProtectionActive)return;
+
+  if(totalDailyPnL()>-CONFIG.dailyLossLimit)return;
+
+  lossProtectionActive=true;
+  running=false;
+
+  document.getElementById("strategyMessage").textContent=
+    "Daily loss limit reached. Strategy paused.";
+
+  log("Daily loss limit reached. Strategy automatically paused.");
+
+  /*
+    Important: close positions without recursively
+    invoking daily loss protection.
+  */
+
+  const assets=Object.keys(positions);
+
+  for(const asset of assets){
+
+    if(positions[asset]&&prices[asset]){
+      closePosition(asset,"Daily loss protection");
+    }
+  }
+
+  lossProtectionActive=false;
+
+  updateDisplay();
+}
+
+/* POSITION DISPLAY */
+
+function renderPositions(){
+
+  const box=document.getElementById("positions");
+  box.innerHTML="";
+
+  const assets=Object.keys(positions);
+
+  if(!assets.length){
+    box.textContent="No open positions.";
+    return;
+  }
+
+  for(const asset of assets){
+
+    const pos=positions[asset];
+
+    if(!pos)continue;
+
+    const market=prices[asset]||pos.entry;
+    const pnl=calculatePnL(pos,market);
+
+    const card=document.createElement("div");
+    card.className="position-card";
+
+    const title=document.createElement("strong");
+    title.textContent=asset+" / USD — "+pos.direction.toUpperCase();
+
+    card.appendChild(title);
+
+    const details=document.createElement("div");
+
+    details.textContent=
+      "Entry: "+money(pos.entry)+
+      " | Current: "+money(market)+
+      " | Stop: "+money(pos.stop)+
+      " | Allocation: "+money(pos.allocation)+
+      " | Net P/L: "+money(pnl)+
+      " | Peak profit: "+money(pos.peakNetPnL);
+
+    details.className=pnl>=0?"good":"bad";
+
+    card.appendChild(details);
+
+    const button=document.createElement("button");
+    button.className="red";
+    button.textContent="Close "+asset;
+
+    button.addEventListener("click",()=>{
+      closePosition(asset,"Manual exit");
+    });
+
+    card.appendChild(button);
+    box.appendChild(card);
+  }
+}
+
+/* HISTORY */
+
 function renderHistory(){
+
   const tbody=document.getElementById("history");
   tbody.innerHTML="";
+
   if(!history.length){
     tbody.innerHTML='<tr><td colspan="6">No completed trades.</td></tr>';
     return;
   }
-  history.forEach(item=>{
+
+  history.slice(0,100).forEach(item=>{
+
     const row=document.createElement("tr");
+
     const values=[
-      item.asset,item.direction.toUpperCase(),
-      money(item.entry),money(item.exit),money(item.pnl),item.reason
+      item.asset,
+      item.direction.toUpperCase(),
+      money(item.entry),
+      money(item.exit),
+      money(item.pnl),
+      item.reason
     ];
+
     values.forEach((value,index)=>{
+
       const cell=document.createElement("td");
       cell.textContent=value;
-      if(index===4)cell.className=item.pnl>=0?"good":"bad";
+
+      if(index===4){
+        cell.className=item.pnl>=0?"good":"bad";
+      }
+
       row.appendChild(cell);
     });
+
     tbody.appendChild(row);
   });
 }
+
+/* RESET */
+
 function resetAccount(){
-  if(!confirm("Reset the paper account and erase all trades?"))return;
+
+  if(!confirm("Reset the virtual account and erase all positions and trades?"))return;
+
   running=false;
-  position=null;
+  positions={};
   history=[];
+
   balance=CONFIG.startingBalance;
   dailyPnL=0;
   tradesToday=0;
-  cooldownUntil=0;
-  lastEntryAsset=null;
-  lastEntryDirection=null;
+
+  nextEntryAt={BTC:0,ETH:0,SOL:0};
+
   samples={BTC:[],ETH:[],SOL:[]};
-  signals={BTC:"Collecting data",ETH:"Collecting data",SOL:"Collecting data"};
+
+  signals={
+    BTC:"Collecting data",
+    ETH:"Collecting data",
+    SOL:"Collecting data"
+  };
+
   dayKey=new Date().toDateString();
+  lossProtectionActive=false;
+
   renderHistory();
+
   document.getElementById("strategyMessage").textContent=
     "Account reset. Strategy paused.";
+
   log("Paper account reset to $10,000.");
+
   updateDisplay();
 }
+
+/* INITIALISE */
+
 updateDisplay();
+
 </script>
 </body>
 </html>
