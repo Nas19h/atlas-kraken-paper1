@@ -3,708 +3,557 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Atlas / Kraken Paper Trader V2.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas Kraken Paper Trader V2.2</title>
 <style>
 :root {
-  color-scheme: dark;
-  --bg:#0b1020;
-  --panel:#151e32;
-  --panel2:#1b2941;
-  --text:#edf3ff;
-  --muted:#9eacc3;
-  --green:#31d69a;
-  --red:#ff667a;
-  --blue:#72a7ff;
-  --border:#2b3a54;
+  color-scheme:dark;
+  --bg:#0b1020;--panel:#151e32;--panel2:#1b2941;
+  --text:#edf3ff;--muted:#9eacc3;--green:#31d69a;
+  --red:#ff667a;--blue:#72a7ff;--border:#2b3a54;
 }
-* {box-sizing:border-box}
-body {
-  margin:0;
-  padding:18px;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,sans-serif;
-}
-main {max-width:900px;margin:auto}
-h1 {font-size:25px;margin-bottom:5px}
-h2 {font-size:17px;margin:0 0 14px}
-p {color:var(--muted);line-height:1.5}
-header {margin-bottom:20px}
-.tag {
-  display:inline-block;
-  padding:5px 9px;
-  border-radius:7px;
-  background:#20364b;
-  color:#80d9ff;
-  font-size:12px;
-  margin-top:7px;
-}
-.panel {
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:13px;
-  padding:16px;
-  margin-bottom:14px;
-}
-.grid {
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:10px;
-}
-.metric {
-  background:var(--panel2);
-  border-radius:9px;
-  padding:12px;
-}
-.metric small {color:var(--muted);display:block;margin-bottom:7px}
-.metric strong {font-size:20px}
-.price-row {
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  padding:12px 0;
-  border-bottom:1px solid var(--border);
-}
-.price-row:last-child {border:0}
-button {
-  border:0;
-  border-radius:9px;
-  padding:13px 15px;
-  font-weight:bold;
-  font-size:14px;
-  cursor:pointer;
-  margin:4px 3px 4px 0;
-}
-.primary {background:var(--blue);color:#071329}
-.green {background:var(--green);color:#06251b}
-.red {background:var(--red);color:#310811}
-.secondary {background:#34445f;color:white}
-button:disabled {opacity:.4;cursor:not-allowed}
-.status {font-weight:bold;color:var(--muted)}
-.good {color:var(--green)}
-.bad {color:var(--red)}
-input {
-  width:100%;
-  padding:10px;
-  border-radius:7px;
-  border:1px solid var(--border);
-  background:#0b1425;
-  color:white;
-  margin-top:5px;
-}
-label {font-size:13px;color:var(--muted)}
-.setting {margin:12px 0}
-table {width:100%;border-collapse:collapse;font-size:13px}
-th,td {
-  text-align:left;
-  padding:10px 5px;
-  border-bottom:1px solid var(--border);
-}
-th {color:var(--muted)}
-#log {
-  max-height:220px;
-  overflow:auto;
-  font-size:12px;
-  line-height:1.6;
-  color:var(--muted);
-}
-.warning {
-  border:1px solid #82632b;
-  background:#302713;
-  color:#ffe0a0;
-  padding:12px;
-  border-radius:9px;
-  font-size:13px;
-  line-height:1.5;
-  margin-bottom:14px;
-}
-@media(min-width:650px) {
-  .grid {grid-template-columns:repeat(4,minmax(0,1fr))}
-}
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+main{max-width:950px;margin:auto}
+h1{font-size:25px;margin:0 0 7px}
+h2{font-size:17px;margin:0 0 14px}
+p{color:var(--muted);line-height:1.5}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:16px;margin:13px 0}
+.tag{display:inline-block;padding:6px 9px;border-radius:7px;background:#20364b;color:#80d9ff;font-size:12px}
+.status{font-weight:bold;color:var(--muted);margin-top:8px}
+.good{color:var(--green)!important}
+.bad{color:var(--red)!important}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.metric{background:var(--panel2);border-radius:9px;padding:12px;min-width:0}
+.metric small{color:var(--muted);display:block;margin-bottom:7px}
+.metric strong{font-size:19px;overflow-wrap:anywhere}
+.price-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.price-row:last-child{border:0}
+button{border:0;border-radius:9px;padding:13px 14px;font-weight:bold;font-size:14px;cursor:pointer;margin:4px 3px 4px 0}
+button:disabled{opacity:.4;cursor:not-allowed}
+.primary{background:var(--blue);color:#071329}
+.green{background:var(--green);color:#06251b}
+.red{background:var(--red);color:#310811}
+.secondary{background:#34445f;color:white}
+.warning{border:1px solid #82632b;background:#302713;color:#ffe0a0;padding:12px;border-radius:9px;font-size:13px;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px 5px;border-bottom:1px solid var(--border);white-space:nowrap}
+th{color:var(--muted)}
+.scroll{overflow-x:auto}
+#log{max-height:220px;overflow:auto;font-size:12px;line-height:1.7;color:var(--muted)}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
 </head>
-
 <body>
 <main>
+
 <header>
-  <h1>Atlas / Kraken Paper Trader</h1>
-  <div class="tag">VERSION 2.1 · PAPER TRADING ONLY</div>
-  <p>BTC / USD · ETH / USD · SOL / USD</p>
-  <div class="status" id="connection">Price feed: Disconnected</div>
-  <div class="status" id="strategyStatus">Strategy: PAUSED</div>
+<h1>Atlas / Kraken Paper Trader</h1>
+<div class="tag">VERSION 2.2 · ACTIVE TWO-WAY SCALPER</div>
+<p>BTC/USD · ETH/USD · SOL/USD</p>
+<div id="connection" class="status">Price feed: Disconnected</div>
+<div id="strategyStatus" class="status">Strategy: PAUSED</div>
 </header>
 
 <div class="warning">
-  <strong>Paper trading only.</strong> This simulator uses public Kraken market prices
-  and virtual money. It does not access your Kraken account, use private API keys,
-  or execute real orders. Simulated results do not guarantee live trading results.
+<strong>PAPER TRADING ONLY.</strong> Atlas uses public Kraken prices and virtual funds.
+It does not access your Kraken account, use private API keys or place real orders.
+Trading signals are experimental and profits are not guaranteed.
 </div>
 
 <section class="panel">
-  <h2>Account overview</h2>
-  <div class="grid">
-    <div class="metric">
-      <small>Virtual balance</small>
-      <strong id="balance">$10,000.00</strong>
-    </div>
-    <div class="metric">
-      <small>Equity</small>
-      <strong id="equity">$10,000.00</strong>
-    </div>
-    <div class="metric">
-      <small>Today's profit / loss</small>
-      <strong id="daily">$0.00</strong>
-    </div>
-    <div class="metric">
-      <small>Completed trades</small>
-      <strong id="tradeCount">0</strong>
-    </div>
-  </div>
+<h2>Account overview</h2>
+<div class="grid">
+<div class="metric"><small>Available balance</small><strong id="balance">$10,000.00</strong></div>
+<div class="metric"><small>Total equity</small><strong id="equity">$10,000.00</strong></div>
+<div class="metric"><small>Today's net P/L</small><strong id="daily">$0.00</strong></div>
+<div class="metric"><small>Entries today</small><strong id="tradeCount">0 / 12</strong></div>
+</div>
 </section>
 
 <section class="panel">
-  <h2>Live Kraken prices</h2>
-  <div class="price-row">
-    <span>Bitcoin (BTC/USD)</span>
-    <strong id="BTC">$--</strong>
-  </div>
-  <div class="price-row">
-    <span>Ethereum (ETH/USD)</span>
-    <strong id="ETH">$--</strong>
-  </div>
-  <div class="price-row">
-    <span>Solana (SOL/USD)</span>
-    <strong id="SOL">$--</strong>
-  </div>
-  <p id="lastUpdate">Waiting for prices...</p>
-  <button class="primary" id="connectBtn" onclick="connectPrices()">
-    Connect live prices
-  </button>
-  <button class="secondary" onclick="disconnectPrices()">
-    Disconnect
-  </button>
+<h2>Live Kraken prices</h2>
+<div class="price-row"><span>Bitcoin (BTC)</span><strong id="BTC">Waiting...</strong></div>
+<div class="price-row"><span>Ethereum (ETH)</span><strong id="ETH">Waiting...</strong></div>
+<div class="price-row"><span>Solana (SOL)</span><strong id="SOL">Waiting...</strong></div>
+<p id="lastUpdate">No price updates yet.</p>
+<button class="primary" id="connectBtn" onclick="connectPrices()">Connect live prices</button>
+<button class="secondary" onclick="disconnectPrices()">Disconnect prices</button>
 </section>
 
 <section class="panel">
-  <h2>Strategy controls</h2>
-  <p>The strategy is separate from the price connection. Connecting prices does not start trading.</p>
-  <button class="green" id="startBtn" onclick="startStrategy()" disabled>
-    Activate paper strategy
-  </button>
-  <button class="secondary" onclick="pauseStrategy()">
-    Pause strategy
-  </button>
-  <button class="red" onclick="emergencyStop()">
-    EMERGENCY STOP
-  </button>
-  <p id="strategyMessage">Strategy is paused. No entries will be made.</p>
+<h2>Strategy controls</h2>
+<button class="green" id="startBtn" onclick="startStrategy()" disabled>Activate paper strategy</button>
+<button class="secondary" onclick="pauseStrategy()">Pause strategy</button>
+<button class="red" onclick="emergencyStop()">EMERGENCY STOP</button>
+<p id="strategyMessage">Paused. No new positions will be opened.</p>
 </section>
 
 <section class="panel">
-  <h2>Risk management settings</h2>
-  <div class="grid">
-    <div class="metric">
-      <small>Maximum allocation</small>
-      <strong>$500</strong>
-    </div>
-    <div class="metric">
-      <small>Maximum planned risk</small>
-      <strong>$25</strong>
-    </div>
-    <div class="metric">
-      <small>Daily loss limit</small>
-      <strong>$100</strong>
-    </div>
-    <div class="metric">
-      <small>Maximum entries/day</small>
-      <strong>3</strong>
-    </div>
-  </div>
-  <p>Stop loss: 0.7% · Take profit: 1% · Cooldown: 15 minutes</p>
-  <p>Only one open position is permitted at a time.</p>
+<h2>Risk management</h2>
+<div class="grid">
+<div class="metric"><small>Maximum allocation</small><strong>$500</strong></div>
+<div class="metric"><small>Maximum planned risk</small><strong>$25</strong></div>
+<div class="metric"><small>Daily loss limit</small><strong>$100</strong></div>
+<div class="metric"><small>Maximum entries</small><strong>12 / day</strong></div>
+</div>
+<p>Target: 0.8% · Stop: 0.4% · Cooldown: 3 minutes</p>
+<p>One open position maximum. Both long and short paper trades are enabled.</p>
+<p>Estimated trading fee: 0.26% per side. Simulated slippage: 0.05% per side.</p>
 </section>
 
 <section class="panel">
-  <h2>Open paper position</h2>
-  <div id="position">No open position.</div>
-  <button class="red" onclick="closePosition('Manual exit')">
-    Close position
-  </button>
+<h2>Market signals</h2>
+<div id="signals">
+<p>Waiting for enough price history to calculate signals.</p>
+</div>
 </section>
 
 <section class="panel">
-  <h2>Trade history</h2>
-  <div style="overflow-x:auto">
-    <table>
-      <thead>
-        <tr>
-          <th>Asset</th>
-          <th>Entry</th>
-          <th>Exit</th>
-          <th>Result</th>
-        </tr>
-      </thead>
-      <tbody id="history">
-        <tr><td colspan="4">No completed trades yet.</td></tr>
-      </tbody>
-    </table>
-  </div>
+<h2>Open paper position</h2>
+<div id="position">No open position.</div>
+<button class="red" onclick="closePosition('Manual exit')">Close position</button>
 </section>
 
 <section class="panel">
-  <h2>Activity log</h2>
-  <div id="log">Atlas initialised. Strategy paused.</div>
+<h2>Trade history</h2>
+<div class="scroll">
+<table>
+<thead><tr><th>Asset</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Net P/L</th><th>Reason</th></tr></thead>
+<tbody id="history"><tr><td colspan="6">No completed trades.</td></tr></tbody>
+</table>
+</div>
 </section>
 
 <section class="panel">
-  <h2>Simulator settings</h2>
-  <div class="setting">
-    <label>Virtual starting balance ($)</label>
-    <input id="startingBalance" type="number" value="10000" min="100">
-  </div>
-  <button class="secondary" onclick="resetAccount()">
-    Reset paper account
-  </button>
-  <p>Resetting clears the simulated balance, trade history and daily results.</p>
+<h2>Activity log</h2>
+<div id="log">Atlas V2.2 initialised. Paper strategy paused.</div>
 </section>
+
+<section class="panel">
+<h2>Reset paper account</h2>
+<button class="secondary" onclick="resetAccount()">Reset virtual account</button>
+<p>This clears the balance, open position, daily counters and trade history.</p>
+</section>
+
 </main>
 
 <script>
+"use strict";
+
 const CONFIG = {
-  allocation: 500,
-  maxRisk: 25,
-  dailyLossLimit: 100,
-  maxTradesPerDay: 3,
-  stopLossPercent: 0.007,
-  takeProfitPercent: 0.01,
-  feePercent: 0.0026,
-  cooldownMs: 15 * 60 * 1000,
-  pollMs: 5000
+  startingBalance:10000,
+  allocation:500,
+  maxRisk:25,
+  dailyLossLimit:100,
+  maxTradesPerDay:12,
+  stopPercent:0.004,
+  targetPercent:0.008,
+  feePercent:0.0026,
+  slippagePercent:0.0005,
+  cooldownMs:180000,
+  pollMs:5000,
+  historyRequired:48
 };
 
 const ASSETS = {
-  BTC: "XBTUSD",
-  ETH: "ETHUSD",
-  SOL: "SOLUSD"
+  BTC:["XXBTZUSD","XBTUSD","BTCUSD"],
+  ETH:["XETHZUSD","ETHUSD"],
+  SOL:["SOLUSD","SOL/USD"]
 };
 
-let balance = 10000;
-let prices = {};
-let connected = false;
-let running = false;
-let timer = null;
-let position = null;
-let history = [];
-let dailyPnL = 0;
-let tradesToday = 0;
-let cooldownUntil = 0;
-let dayKey = new Date().toDateString();
+let balance=CONFIG.startingBalance;
+let prices={};
+let samples={BTC:[],ETH:[],SOL:[]};
+let signals={BTC:"Collecting data",ETH:"Collecting data",SOL:"Collecting data"};
+let connected=false;
+let running=false;
+let timer=null;
+let position=null;
+let history=[];
+let dailyPnL=0;
+let tradesToday=0;
+let cooldownUntil=0;
+let dayKey=new Date().toDateString();
+let lastEntryAsset=null;
+let lastEntryDirection=null;
 
-let samples = {BTC:[], ETH:[], SOL:[]};
-let lastSignalTime = {};
-
-function money(n) {
-  return "$" + Number(n).toFixed(2);
+function money(n){
+  return "$"+Number(n).toFixed(2);
 }
-
-function log(message) {
-  const box = document.getElementById("log");
-  const line = document.createElement("div");
-  line.textContent = new Date().toLocaleTimeString() + " — " + message;
+function log(message){
+  const box=document.getElementById("log");
+  const line=document.createElement("div");
+  line.textContent=new Date().toLocaleTimeString()+" — "+message;
   box.prepend(line);
 }
+function average(a){
+  return a.reduce((x,y)=>x+y,0)/a.length;
+}
+function updateDisplay(){
+  document.getElementById("balance").textContent=money(balance);
+  const unreal=position&&prices[position.asset]
+    ? calculatePnL(position,prices[position.asset]) : 0;
+  document.getElementById("equity").textContent=
+    money(balance+(position?position.allocation:0)+unreal);
 
-function updateDisplay() {
-  document.getElementById("balance").textContent = money(balance);
-  document.getElementById("equity").textContent =
-    money(balance + (position ? position.unrealised || 0 : 0));
+  const daily=document.getElementById("daily");
+  daily.textContent=money(dailyPnL);
+  daily.className=dailyPnL>=0?"good":"bad";
 
-  const daily = document.getElementById("daily");
-  daily.textContent = money(dailyPnL);
-  daily.className = dailyPnL >= 0 ? "good" : "bad";
+  document.getElementById("tradeCount").textContent=
+    tradesToday+" / "+CONFIG.maxTradesPerDay;
 
-  document.getElementById("tradeCount").textContent = tradesToday;
+  document.getElementById("strategyStatus").textContent=
+    "Strategy: "+(running?"ACTIVE":"PAUSED");
+  document.getElementById("strategyStatus").className=
+    "status "+(running?"good":"");
 
-  document.getElementById("strategyStatus").textContent =
-    "Strategy: " + (running ? "ACTIVE" : "PAUSED");
+  document.getElementById("connectBtn").disabled=connected;
+  document.getElementById("startBtn").disabled=!connected||running||
+    dailyPnL<=-CONFIG.dailyLossLimit||tradesToday>=CONFIG.maxTradesPerDay;
 
-  document.getElementById("strategyStatus").className =
-    "status " + (running ? "good" : "");
-
-  document.getElementById("startBtn").disabled = !connected || running;
-  document.getElementById("connectBtn").disabled = connected;
-
-  if (!position) {
-    document.getElementById("position").textContent = "No open position.";
-  } else {
-    const current = prices[position.asset];
-    const pnl = current ? calculatePnL(position, current) : 0;
-    position.unrealised = pnl;
-    document.getElementById("position").innerHTML =
-      "<strong>" + position.asset + " / USD</strong><br>" +
-      "Entry: " + money(position.entry) + "<br>" +
-      "Current: " + money(current || position.entry) + "<br>" +
-      "Stop: " + money(position.stop) + "<br>" +
-      "Target: " + money(position.target) + "<br>" +
-      "Quantity: " + position.quantity.toFixed(6) + "<br>" +
-      "Estimated P/L after fees: " + money(pnl);
+  if(!position){
+    document.getElementById("position").textContent="No open position.";
+  }else{
+    const current=prices[position.asset]||position.entry;
+    const pnl=calculatePnL(position,current);
+    document.getElementById("position").innerHTML=
+      "<strong>"+position.asset+" / USD — "+
+      position.direction.toUpperCase()+"</strong><br>"+
+      "Entry: "+money(position.entry)+"<br>"+
+      "Current market price: "+money(current)+"<br>"+
+      "Stop: "+money(position.stop)+"<br>"+
+      "Target: "+money(position.target)+"<br>"+
+      "Allocation: "+money(position.allocation)+"<br>"+
+      "Estimated net P/L: "+money(pnl);
   }
-}
 
-function calculatePnL(pos, exitPrice) {
-  const gross = (exitPrice - pos.entry) * pos.quantity;
-  const fees = (pos.entry * pos.quantity + exitPrice * pos.quantity)
-    * CONFIG.feePercent;
-  return gross - fees;
+  renderSignals();
 }
-
-function checkNewDay() {
-  const today = new Date().toDateString();
-  if (today !== dayKey) {
-    dayKey = today;
-    dailyPnL = 0;
-    tradesToday = 0;
-    log("New trading day. Daily counters reset.");
+function checkNewDay(){
+  const today=new Date().toDateString();
+  if(today!==dayKey){
+    dayKey=today;
+    dailyPnL=0;
+    tradesToday=0;
+    log("New day: daily counters reset.");
     updateDisplay();
   }
 }
-
-async function connectPrices() {
-  if (connected) return;
-
-  document.getElementById("connection").textContent =
-    "Price feed: Connecting...";
-
-  try {
-    await fetchPrices();
-    connected = true;
-    timer = setInterval(fetchPrices, CONFIG.pollMs);
-
-    document.getElementById("connection").textContent =
-      "Price feed: Connected to public Kraken data";
-
-    document.getElementById("connection").className = "status good";
-    log("Live public price feed connected. Strategy remains paused.");
-    updateDisplay();
-  } catch (error) {
-    document.getElementById("connection").textContent =
-      "Price feed: Connection failed";
-
-    document.getElementById("connection").className = "status bad";
-    log("Connection error: " + error.message);
+function renderSignals(){
+  const box=document.getElementById("signals");
+  box.innerHTML="";
+  for(const asset of Object.keys(ASSETS)){
+    const row=document.createElement("div");
+    row.className="price-row";
+    const left=document.createElement("span");
+    left.textContent=asset;
+    const right=document.createElement("strong");
+    right.textContent=signals[asset];
+    right.className=signals[asset].includes("LONG")?"good":
+      signals[asset].includes("SHORT")?"bad":"";
+    row.append(left,right);
+    box.appendChild(row);
   }
 }
+async function fetchPrices(){
+  const response=await fetch(
+    "https://api.kraken.com/0/public/Ticker?pair=XBTUSD,ETHUSD,SOLUSD"
+  );
+  if(!response.ok)throw Error("Kraken price request failed");
+  const data=await response.json();
+  if(data.error&&data.error.length)throw Error(data.error.join(","));
 
-async function fetchPrices() {
-  const pairs = Object.values(ASSETS).join(",");
-  const url = "https://api.kraken.com/0/public/Ticker?pair=" +
-    encodeURIComponent(pairs);
-
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("Kraken price request failed");
-
-  const data = await response.json();
-  if (data.error && data.error.length) {
-    throw new Error(data.error.join(", "));
-  }
-
-  const results = data.result;
-
-  for (const asset of Object.keys(ASSETS)) {
-    const pair = ASSETS[asset];
-    const key = Object.keys(results).find(k =>
-      k.toUpperCase().includes(pair.toUpperCase())
+  const result=data.result;
+  for(const asset of Object.keys(ASSETS)){
+    const aliases=ASSETS[asset];
+    const key=Object.keys(result).find(k=>
+      aliases.some(alias=>k.toUpperCase()===alias.toUpperCase()) ||
+      (asset==="BTC"&&k.toUpperCase().includes("XBT")) ||
+      (asset==="ETH"&&k.toUpperCase().includes("ETH")) ||
+      (asset==="SOL"&&k.toUpperCase().includes("SOL"))
     );
-
-    if (!key) continue;
-
-    const price = Number(results[key].c[0]);
-    if (!Number.isFinite(price) || price <= 0) continue;
-
-    prices[asset] = price;
-    samples[asset].push({price, time:Date.now()});
-
-    if (samples[asset].length > 100) {
-      samples[asset].shift();
-    }
-
-    document.getElementById(asset).textContent = money(price);
+    if(!key)continue;
+    const price=Number(result[key].c[0]);
+    if(!Number.isFinite(price)||price<=0)continue;
+    prices[asset]=price;
+    samples[asset].push({price,time:Date.now()});
+    if(samples[asset].length>150)samples[asset].shift();
+    document.getElementById(asset).textContent=money(price);
   }
-
-  document.getElementById("lastUpdate").textContent =
-    "Last update: " + new Date().toLocaleTimeString();
-
+  document.getElementById("lastUpdate").textContent=
+    "Last price update: "+new Date().toLocaleTimeString();
   checkNewDay();
   managePosition();
-  if (running) checkSignals();
+  calculateSignals();
+  if(running)lookForEntry();
   updateDisplay();
 }
-
-function disconnectPrices() {
-  if (timer) clearInterval(timer);
-  timer = null;
-  connected = false;
-  running = false;
-
-  document.getElementById("connection").textContent =
-    "Price feed: Disconnected";
-
-  document.getElementById("connection").className = "status";
-  document.getElementById("strategyMessage").textContent =
+async function connectPrices(){
+  if(connected)return;
+  document.getElementById("connection").textContent="Price feed: Connecting...";
+  try{
+    await fetchPrices();
+    connected=true;
+    timer=setInterval(async()=>{
+      try{await fetchPrices();}
+      catch(e){
+        log("Price update failed: "+e.message);
+        document.getElementById("connection").textContent=
+          "Price feed: Update error";
+      }
+    },CONFIG.pollMs);
+    document.getElementById("connection").textContent=
+      "Price feed: Connected to public Kraken data";
+    document.getElementById("connection").className="status good";
+    log("Live public price feed connected. Strategy remains paused.");
+    updateDisplay();
+  }catch(e){
+    document.getElementById("connection").textContent="Price feed: Connection failed";
+    document.getElementById("connection").className="status bad";
+    log("Connection failed: "+e.message);
+  }
+}
+function disconnectPrices(){
+  if(timer)clearInterval(timer);
+  timer=null;
+  connected=false;
+  running=false;
+  document.getElementById("connection").textContent="Price feed: Disconnected";
+  document.getElementById("connection").className="status";
+  document.getElementById("strategyMessage").textContent=
     "Disconnected. Strategy paused.";
-
   log("Price feed disconnected. Strategy paused.");
   updateDisplay();
 }
-
-function startStrategy() {
-  if (!connected) {
-    alert("Connect live prices first.");
-    return;
-  }
-
-  if (dailyPnL <= -CONFIG.dailyLossLimit) {
-    alert("Daily loss limit reached.");
-    return;
-  }
-
-  running = true;
-  document.getElementById("strategyMessage").textContent =
-    "Strategy active. Monitoring BTC, ETH and SOL.";
-
-  log("Paper strategy activated.");
+function startStrategy(){
+  if(!connected){alert("Connect live prices first.");return;}
+  if(dailyPnL<=-CONFIG.dailyLossLimit){alert("Daily loss limit reached.");return;}
+  if(tradesToday>=CONFIG.maxTradesPerDay){alert("Daily trade limit reached.");return;}
+  running=true;
+  document.getElementById("strategyMessage").textContent=
+    "Active: searching for long and short opportunities.";
+  log("Active two-way paper strategy started.");
+  updateDisplay();
+}
+function pauseStrategy(){
+  running=false;
+  document.getElementById("strategyMessage").textContent=
+    "Paused. Any existing position remains open.";
+  log("Strategy paused. Existing position retained.");
+  updateDisplay();
+}
+function emergencyStop(){
+  running=false;
+  if(position&&prices[position.asset])closePosition("Emergency stop");
+  document.getElementById("strategyMessage").textContent=
+    "Emergency stop activated. Strategy disabled.";
+  log("Emergency stop activated.");
   updateDisplay();
 }
 
-function pauseStrategy() {
-  running = false;
-  document.getElementById("strategyMessage").textContent =
-    "Strategy paused. Existing position remains open.";
+/*
+  Signal method:
+  Compares a short average with a longer average and checks
+  recent price momentum. It is an experimental signal, not a
+  proven trading system or a prediction of future prices.
+*/
+function calculateSignals(){
+  for(const asset of Object.keys(ASSETS)){
+    const values=samples[asset].map(x=>x.price);
+    if(values.length<CONFIG.historyRequired){
+      signals[asset]="Collecting price history";
+      continue;
+    }
+    const fast=average(values.slice(-12));
+    const slow=average(values.slice(-48));
+    const earlier=values[values.length-13];
+    const latest=values[values.length-1];
+    const momentum=(latest-earlier)/earlier;
 
-  log("Strategy paused.");
-  updateDisplay();
-}
-
-function emergencyStop() {
-  running = false;
-
-  if (position && prices[position.asset]) {
-    closePosition("Emergency stop");
+    if(fast>slow*1.00015&&momentum>0.00025&&latest>fast){
+      signals[asset]="Potential LONG";
+    }else if(fast<slow*0.99985&&momentum< -0.00025&&latest<fast){
+      signals[asset]="Potential SHORT";
+    }else{
+      signals[asset]="Watching — no clear signal";
+    }
   }
-
-  document.getElementById("strategyMessage").textContent =
-    "EMERGENCY STOP. Strategy disabled.";
-
-  log("Emergency stop activated. No new trades permitted.");
-  updateDisplay();
 }
-
-function average(values) {
-  return values.reduce((a,b) => a+b, 0) / values.length;
-}
-
-function checkSignals() {
+function lookForEntry(){
   checkNewDay();
-
-  if (!running || position) return;
-
-  if (dailyPnL <= -CONFIG.dailyLossLimit) {
-    running = false;
+  if(!running||position)return;
+  if(dailyPnL<=-CONFIG.dailyLossLimit){
+    running=false;
     log("Daily loss limit reached. Strategy automatically paused.");
     updateDisplay();
     return;
   }
-
-  if (tradesToday >= CONFIG.maxTradesPerDay) {
-    running = false;
+  if(tradesToday>=CONFIG.maxTradesPerDay){
+    running=false;
     log("Maximum daily entries reached. Strategy paused.");
     updateDisplay();
     return;
   }
+  if(Date.now()<cooldownUntil)return;
 
-  if (Date.now() < cooldownUntil) return;
-
-  for (const asset of Object.keys(ASSETS)) {
-    const values = samples[asset].map(x => x.price);
-
-    if (values.length < 25) continue;
-
-    const recent = values.slice(-8);
-    const previous = values.slice(-20, -8);
-
-    const shortAverage = average(recent);
-    const longAverage = average(previous);
-    const current = prices[asset];
-
-    // Simple experimental momentum signal.
-    // This is not a proven or profitable trading strategy.
-    const bullish = shortAverage > longAverage &&
-      current > shortAverage;
-
-    if (bullish && lastSignalTime[asset] !== dayKey) {
-      openPosition(asset, current);
-      lastSignalTime[asset] = dayKey;
-      break;
-    }
+  const candidates=[];
+  for(const asset of Object.keys(ASSETS)){
+    if(!prices[asset])continue;
+    if(signals[asset]==="Potential LONG")candidates.push({asset,direction:"long"});
+    if(signals[asset]==="Potential SHORT")candidates.push({asset,direction:"short"});
   }
+  if(!candidates.length)return;
+
+  // Prefer the strongest recent percentage move.
+  candidates.sort((a,b)=>{
+    const score=x=>{
+      const s=samples[x.asset];
+      return Math.abs((s[s.length-1].price-s[s.length-13].price)/
+        s[s.length-13].price);
+    };
+    return score(b)-score(a);
+  });
+
+  const choice=candidates[0];
+  if(choice.asset===lastEntryAsset&&choice.direction===lastEntryDirection)return;
+  openPosition(choice.asset,choice.direction,prices[choice.asset]);
 }
+function openPosition(asset,direction,marketPrice){
+  if(!running||position||tradesToday>=CONFIG.maxTradesPerDay)return;
+  if(dailyPnL<=-CONFIG.dailyLossLimit)return;
 
-function openPosition(asset, entry) {
-  if (!running || position || tradesToday >= CONFIG.maxTradesPerDay) return;
+  const allocation=Math.min(CONFIG.allocation,balance);
+  if(allocation<=0)return;
 
-  if (dailyPnL <= -CONFIG.dailyLossLimit) return;
+  const riskAllocation=CONFIG.maxRisk/CONFIG.stopPercent;
+  const actualAllocation=Math.min(allocation,riskAllocation);
+  const entry=direction==="long"
+    ?marketPrice*(1+CONFIG.slippagePercent)
+    :marketPrice*(1-CONFIG.slippagePercent);
+  const quantity=actualAllocation/entry;
 
-  const allocation = Math.min(CONFIG.allocation, balance);
-  if (allocation <= 0) return;
-
-  const riskBasedAllocation =
-    CONFIG.maxRisk / CONFIG.stopLossPercent;
-
-  const actualAllocation = Math.min(allocation, riskBasedAllocation);
-  const quantity = actualAllocation / entry;
-
-  if (!Number.isFinite(quantity) || quantity <= 0) return;
-
-  position = {
-    asset,
-    entry,
-    quantity,
+  position={
+    asset,direction,entry,quantity,
     allocation:actualAllocation,
-    stop:entry * (1 - CONFIG.stopLossPercent),
-    target:entry * (1 + CONFIG.takeProfitPercent),
+    stop:direction==="long"
+      ?entry*(1-CONFIG.stopPercent)
+      :entry*(1+CONFIG.stopPercent),
+    target:direction==="long"
+      ?entry*(1+CONFIG.targetPercent)
+      :entry*(1-CONFIG.targetPercent),
     openedAt:Date.now()
   };
 
-  balance -= actualAllocation;
+  balance-=actualAllocation;
   tradesToday++;
+  lastEntryAsset=asset;
+  lastEntryDirection=direction;
 
-  log("PAPER BUY " + asset + " at " + money(entry) +
-    ". Allocation: " + money(actualAllocation));
-
+  log("PAPER "+direction.toUpperCase()+" "+asset+
+    " at "+money(entry)+". Reserved "+money(actualAllocation)+".");
   updateDisplay();
 }
-
-function managePosition() {
-  if (!position) return;
-
-  const current = prices[position.asset];
-  if (!current) return;
-
-  if (current <= position.stop) {
-    closePosition("Stop loss");
-  } else if (current >= position.target) {
-    closePosition("Take profit");
-  }
+function calculatePnL(pos,marketExit){
+  const exit=pos.direction==="long"
+    ?marketExit*(1-CONFIG.slippagePercent)
+    :marketExit*(1+CONFIG.slippagePercent);
+  const gross=pos.direction==="long"
+    ?(exit-pos.entry)*pos.quantity
+    :(pos.entry-exit)*pos.quantity;
+  const fees=(pos.entry*pos.quantity+exit*pos.quantity)*CONFIG.feePercent;
+  return gross-fees;
 }
+function managePosition(){
+  if(!position)return;
+  const market=prices[position.asset];
+  if(!market)return;
 
-function closePosition(reason) {
-  if (!position) return;
+  const stopped=position.direction==="long"
+    ?market<=position.stop:market>=position.stop;
+  const targeted=position.direction==="long"
+    ?market>=position.target:market<=position.target;
 
-  const current = prices[position.asset];
-  if (!current) {
-    log("Cannot close yet: waiting for a current price.");
-    return;
-  }
+  if(stopped)closePosition("Stop loss");
+  else if(targeted)closePosition("Take profit");
+}
+function closePosition(reason){
+  if(!position)return;
+  const market=prices[position.asset];
+  if(!market){log("Waiting for a current price before closing.");return;}
 
-  const closed = position;
-  const pnl = calculatePnL(closed, current);
-
-  balance += closed.allocation + pnl;
-  dailyPnL += pnl;
+  const closed=position;
+  const pnl=calculatePnL(closed,market);
+  balance+=closed.allocation+pnl;
+  dailyPnL+=pnl;
 
   history.unshift({
     asset:closed.asset,
+    direction:closed.direction,
     entry:closed.entry,
-    exit:current,
+    exit:market,
     pnl,
     reason
   });
 
-  position = null;
-  cooldownUntil = Date.now() + CONFIG.cooldownMs;
-
+  position=null;
+  cooldownUntil=Date.now()+CONFIG.cooldownMs;
   renderHistory();
 
-  log("PAPER SELL " + closed.asset + " at " + money(current) +
-    ". " + reason + ". Result: " + money(pnl));
+  log("PAPER "+closed.direction.toUpperCase()+" closed: "+
+    closed.asset+". "+reason+". Net result "+money(pnl));
 
-  if (dailyPnL <= -CONFIG.dailyLossLimit) {
-    running = false;
+  if(dailyPnL<=-CONFIG.dailyLossLimit){
+    running=false;
     log("Daily loss limit reached. Strategy automatically paused.");
+    document.getElementById("strategyMessage").textContent=
+      "Daily loss limit reached. Strategy paused.";
   }
-
   updateDisplay();
 }
-
-function renderHistory() {
-  const tbody = document.getElementById("history");
-  tbody.innerHTML = "";
-
-  if (!history.length) {
-    tbody.innerHTML =
-      '<tr><td colspan="4">No completed trades yet.</td></tr>';
+function renderHistory(){
+  const tbody=document.getElementById("history");
+  tbody.innerHTML="";
+  if(!history.length){
+    tbody.innerHTML='<tr><td colspan="6">No completed trades.</td></tr>';
     return;
   }
-
-  history.forEach(item => {
-    const row = document.createElement("tr");
-
-    const values = [
-      item.asset,
-      money(item.entry),
-      money(item.exit),
-      money(item.pnl)
+  history.forEach(item=>{
+    const row=document.createElement("tr");
+    const values=[
+      item.asset,item.direction.toUpperCase(),
+      money(item.entry),money(item.exit),money(item.pnl),item.reason
     ];
-
-    values.forEach((value, index) => {
-      const cell = document.createElement("td");
-      cell.textContent = value;
-
-      if (index === 3) {
-        cell.className = item.pnl >= 0 ? "good" : "bad";
-      }
-
+    values.forEach((value,index)=>{
+      const cell=document.createElement("td");
+      cell.textContent=value;
+      if(index===4)cell.className=item.pnl>=0?"good":"bad";
       row.appendChild(cell);
     });
-
     tbody.appendChild(row);
   });
 }
-
-function resetAccount() {
-  if (!confirm("Reset the entire paper account and erase trade history?")) {
-    return;
-  }
-
-  running = false;
-  position = null;
-  history = [];
-  dailyPnL = 0;
-  tradesToday = 0;
-  cooldownUntil = 0;
-
-  const starting = Number(
-    document.getElementById("startingBalance").value
-  );
-
-  if (!Number.isFinite(starting) || starting < 100) {
-    alert("Enter a valid starting balance of at least $100.");
-    return;
-  }
-
-  balance = starting;
-  samples = {BTC:[], ETH:[], SOL:[]};
-  lastSignalTime = {};
-
+function resetAccount(){
+  if(!confirm("Reset the paper account and erase all trades?"))return;
+  running=false;
+  position=null;
+  history=[];
+  balance=CONFIG.startingBalance;
+  dailyPnL=0;
+  tradesToday=0;
+  cooldownUntil=0;
+  lastEntryAsset=null;
+  lastEntryDirection=null;
+  samples={BTC:[],ETH:[],SOL:[]};
+  signals={BTC:"Collecting data",ETH:"Collecting data",SOL:"Collecting data"};
+  dayKey=new Date().toDateString();
   renderHistory();
-  document.getElementById("strategyMessage").textContent =
+  document.getElementById("strategyMessage").textContent=
     "Account reset. Strategy paused.";
-
-  log("Paper account reset to " + money(balance));
+  log("Paper account reset to $10,000.");
   updateDisplay();
 }
-
 updateDisplay();
 </script>
 </body>
