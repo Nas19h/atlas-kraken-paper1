@@ -261,34 +261,59 @@ async function fetchPrices(){
   const response=await fetch(
     "https://api.kraken.com/0/public/Ticker?pair=XBTUSD,ETHUSD,SOLUSD"
   );
+
   if(!response.ok)throw Error("Kraken price request failed");
+
   const data=await response.json();
-  if(data.error&&data.error.length)throw Error(data.error.join(","));
+
+  if(data.error&&data.error.length){
+    throw Error(data.error.join(","));
+  }
 
   const result=data.result;
-  for(const asset of Object.keys(ASSETS)){
-    const aliases=ASSETS[asset];
-    const key=Object.keys(result).find(k=>
-      aliases.some(alias=>k.toUpperCase()===alias.toUpperCase()) ||
-      (asset==="BTC"&&k.toUpperCase().includes("XBT")) ||
-      (asset==="ETH"&&k.toUpperCase().includes("ETH")) ||
-      (asset==="SOL"&&k.toUpperCase().includes("SOL"))
-    );
+
+  const pairMap={
+    BTC:["XXBTZUSD","XBTUSD","BTCUSD"],
+    ETH:["XETHZUSD","ETHUSD","XETHUSD"],
+    SOL:["SOLUSD","SOL/USD"]
+  };
+
+  for(const asset of Object.keys(pairMap)){
+    const key=Object.keys(result).find(k=>{
+      const name=k.toUpperCase();
+      return pairMap[asset].some(alias=>
+        name===alias.toUpperCase()
+      ) ||
+      (asset==="BTC"&&name.includes("XBT")) ||
+      (asset==="ETH"&&name.includes("ETH")) ||
+      (asset==="SOL"&&name.includes("SOL"));
+    });
+
     if(!key)continue;
+
     const price=Number(result[key].c[0]);
+
     if(!Number.isFinite(price)||price<=0)continue;
+
     prices[asset]=price;
     samples[asset].push({price,time:Date.now()});
+
     if(samples[asset].length>150)samples[asset].shift();
+
     document.getElementById(asset).textContent=money(price);
   }
+
   document.getElementById("lastUpdate").textContent=
     "Last price update: "+new Date().toLocaleTimeString();
+
   checkNewDay();
   managePosition();
   calculateSignals();
+
   if(running)lookForEntry();
+
   updateDisplay();
+}
 }
 async function connectPrices(){
   if(connected)return;
