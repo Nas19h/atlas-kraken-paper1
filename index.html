@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<title>Atlas — Kraken Paper Trader</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121d2e;--line:#26364d;--muted:#9aabc2;--text:#eef4ff;--green:#42d392;--red:#ff7272;--blue:#7bb6ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:900px;margin:auto;padding:20px 14px 44px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-size:25px;margin:0}h2{font-size:17px;margin:0 0 12px}.sub{color:var(--muted);font-size:13px;margin-top:5px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.metric{font-size:22px;font-weight:700;margin-top:5px;overflow-wrap:anywhere}.label{color:var(--muted);font-size:12px}
+.green{color:var(--green)}.red{color:var(--red)}.muted{color:var(--muted)}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:650;background:var(--blue);color:#081322;font-size:14px}
+button.secondary{background:#25354b;color:var(--text)}button.danger{background:#542b37;color:#ffdce2}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:9px 5px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:500}
+.notice{font-size:12px;line-height:1.5;color:var(--muted)}.status{display:flex;gap:8px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:#e6b45c}.dot.on{background:var(--green)}
+.log{max-height:240px;overflow:auto;font-size:12px;line-height:1.55;color:var(--muted)}
+.log div{padding:5px 0;border-bottom:1px solid #1d2b3e}
+footer{color:var(--muted);font-size:11px;margin-top:18px}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body><main>
+<header class="top">
+ <div><h1>Atlas <span style="color:var(--blue)">/</span> Kraken Paper Trader</h1><div class="sub">Live public prices · simulated orders only · no account access</div></div>
+ <div class="pill status"><span id="dot" class="dot"></span><span id="connection">Disconnected</span></div>
+</header>
+<div class="actions">
+ <button id="connect">Connect live prices</button>
+ <button id="pause" class="secondary">Pause strategy</button>
+ <button id="reset" class="danger">Reset paper account</button>
+</div>
+<section class="grid">
+ <div class="card"><div class="label">Virtual equity</div><div class="metric" id="equity">$10,000.00</div></div>
+ <div class="card"><div class="label">Available cash</div><div class="metric" id="cash">$10,000.00</div></div>
+ <div class="card"><div class="label">Realised P/L</div><div class="metric" id="realised">$0.00</div></div>
+ <div class="card"><div class="label">Drawdown from start</div><div class="metric" id="drawdown">$0.00</div></div>
+</section>
+<section class="card" style="margin-bottom:12px">
+ <h2>Market watch</h2>
+ <table><thead><tr><th>Market</th><th>Last close</th><th>Signal</th><th>Position</th></tr></thead><tbody id="markets"></tbody></table>
+</section>
+<section class="card" style="margin-bottom:12px">
+ <h2>Open simulated positions</h2>
+ <table><thead><tr><th>Market</th><th>Entry</th><th>Size</th><th>Unrealised P/L</th></tr></thead><tbody id="positions"><tr><td colspan="4" class="muted">No open positions</td></tr></tbody></table>
+</section>
+<section class="card" style="margin-bottom:12px">
+ <h2>Closed trades</h2>
+ <table><thead><tr><th>Market</th><th>Entry → Exit</th><th>Net P/L</th><th>Reason</th></tr></thead><tbody id="trades"><tr><td colspan="4" class="muted">No closed trades yet</td></tr></tbody></table>
+</section>
+<section class="card">
+ <h2>Activity</h2><div class="log" id="log">Connect to Kraken public market data to begin.</div>
+</section>
+<footer>
+Paper simulation only. Strategy is experimental, long-only and not evidence of profitability. Estimated fees and slippage are assumptions; actual fills, spreads, latency and exchange fees may differ. Keep this page open for live monitoring; iOS may suspend background tabs.
+</footer>
+</main>
+<script>
+(() => {
+const SYMBOLS=["BTC/USD","ETH/USD","SOL/USD"];
+const START=10000, ORDER_USD=500, MAX_DRAWDOWN=250;
+const FEE=0.004, SLIPPAGE=0.0005;
+const STOP=0.005, TAKE=0.008, MAX_HOLD=5;
+let ws=null, running=false, paused=false, lastMsg=0;
+let state=load();
+const markets={};
+SYMBOLS.forEach(s=>markets[s]={candles:[],price:null,signal:"Warming up",lastBegin:null});
+function fresh(){return {cash:START,realised:0,positions:{},trades:[],peak:START,halted:false,log:[]};}
+function load(){try{let x=JSON.parse(localStorage.getItem("atlasPaperV1"));return x&&x.cash!==undefined?x:fresh()}catch{return fresh()}}
+function save(){localStorage.setItem("atlasPaperV1",JSON.stringify(state));}
+function money(x){return (x<0?"-$":"$")+Math.abs(x).toFixed(2)}
+function log(s){state.log.unshift(new Date().toLocaleTimeString()+" — "+s);state.log=state.log.slice(0,60);save();renderLog()}
+function ema(vals,n){if(vals.length<n)return null;let k=2/(n+1),v=vals.slice(0,n).reduce((a,b)=>a+b,0)/n;for(let i=n;i<vals.length;i++)v=vals[i]*k+v*(1-k);return v}
+function rsi(vals,n=14){if(vals.length<n+1)return null;let up=0,dn=0;for(let i=vals.length-n;i<vals.length;i++){let d=vals[i]-vals[i-1];if(d>0)up+=d;else dn-=d}if(dn===0)return 100;let rs=(up/n)/(dn/n);return 100-100/(1+rs)}
+function equity(){let e=state.cash;for(const [s,p] of Object.entries(state.positions)){let px=markets[s].price||p.entry;e+=p.qty*px}return e}
+function evaluate(s,candle){
+ const m=markets[s], closes=m.candles.map(c=>c.close), p=state.positions[s];
+ const fast=ema(closes,9), slow=ema(closes,21), rv=rsi(closes);
+ if(!fast||!slow||rv===null){m.signal="Warming up";return}
+ const px=candle.close, age=p?((Date.now()-p.opened)/60000):0;
+ m.signal=fast>slow&&rv>=52&&rv<=70&&px>fast?"BUY setup":fast<slow?"Bearish":"No setup";
+ if(state.halted||paused)return;
+ if(p){
+   const move=(px-p.entry)/p.entry;
+   let reason=null;
+   if(move<=-STOP)reason="Stop loss";
+   else if(move>=TAKE)reason="Take profit";
+   else if(fast<slow||rv<45)reason="Momentum exit";
+   else if(age>=MAX_HOLD)reason="Time exit";
+   if(reason)closePosition(s,px,reason);
+ } else if(fast>slow&&rv>=52&&rv<=70&&px>fast&&state.cash>=ORDER_USD){
+   openPosition(s,px);
+ }
+}
+function openPosition(s,px){
+ const entry=px*(1+SLIPPAGE), fee=ORDER_USD*FEE, spend=ORDER_USD;
+ const qty=(spend-fee)/entry;
+ if(state.cash<spend)return;
+ state.cash-=spend;
+ state.positions[s]={entry,qty,cost:spend,entryFee:fee,opened:Date.now()};
+ log("PAPER BUY "+s+" at "+entry.toFixed(4)+" · $"+spend.toFixed(2)+" allocation");
+ save();render();
+}
+function closePosition(s,px,reason){
+ const p=state.positions[s];if(!p)return;
+ const exit=px*(1-SLIPPAGE),gross=p.qty*exit,fee=gross*FEE;
+ const net=gross-fee-p.cost;
+ state.cash+=gross-fee;
+ state.realised+=net;
+ state.trades.unshift({s,entry:p.entry,exit,net,reason,time:Date.now()});
+ state.trades=state.trades.slice(0,100);
+ delete state.positions[s];
+ log("PAPER SELL "+s+" at "+exit.toFixed(4)+" · "+money(net)+" · "+reason);
+ save();render();
+}
+function onCandle(s,o){
+ const m=markets[s], begin=o.interval_begin, c={begin,open:+o.open,high:+o.high,low:+o.low,close:+o.close,volume:+o.volume};
+ m.price=c.close;
+ if(m.lastBegin===null){m.lastBegin=begin;m.candles.push(c);return}
+ if(begin!==m.lastBegin){
+   const prior=m.candles[m.candles.length-1];
+   if(prior)evaluate(s,prior);
+   m.candles.push(c);m.lastBegin=begin;
+   if(m.candles.length>120)m.candles.shift();
+ } else {m.candles[m.candles.length-1]=c}
+ const eq=equity();state.peak=Math.max(state.peak,eq);
+ if(eq<=START-MAX_DRAWDOWN&&!state.halted){state.halted=true;log("SAFETY HALT: $250 drawdown limit reached. No new trades.");}
+ save();render();
+}
+async function loadHistory(){
+ const aliases={"BTC/USD":"XBTUSD","ETH/USD":"ETHUSD","SOL/USD":"SOLUSD"};
+ for(const s of SYMBOLS){
+  try{
+   const r=await fetch("https://api.kraken.com/0/public/OHLC?pair="+aliases[s]+"&interval=1");
+   const j=await r.json();
+   if(j.error&&j.error.length)throw new Error(j.error.join(", "));
+   const key=Object.keys(j.result).find(k=>k!=="last");
+   const rows=(j.result[key]||[]).slice(0,-1).slice(-100);
+   markets[s].candles=rows.map(x=>({begin:new Date(Number(x[0])*1000).toISOString(),open:+x[1],high:+x[2],low:+x[3],close:+x[4],volume:+x[6]}));
+  }catch(e){log("History preload failed for "+s+": "+e.message+" · waiting for live candles.");}
+ }
+}
+async function connect(){
+ if(ws){ws.close();ws=null}
+ setStatus("Loading candle history…",false);
+ await loadHistory();
+ setStatus("Connecting…",false);
+ ws=new WebSocket("wss://ws.kraken.com/v2");
+ ws.onopen=()=>{
+  running=true;setStatus("Connected · live feed",true);
+  ws.send(JSON.stringify({method:"subscribe",params:{channel:"ohlc",symbol:SYMBOLS,interval:1,snapshot:true}}));
+  log("Connected to Kraken public WebSocket v2; subscribed to 1-minute candles.");
+ };
+ ws.onmessage=e=>{
+  lastMsg=Date.now();let msg;try{msg=JSON.parse(e.data)}catch{return}
+  if(msg.channel==="ohlc"&&Array.isArray(msg.data)){
+   for(const o of msg.data){let s=o.symbol;if(markets[s])onCandle(s,o)}
+  }
+  if(msg.method==="subscribe"&&msg.success===false)log("Subscription error: "+JSON.stringify(msg.error||msg));
+ };
+ ws.onerror=()=>{setStatus("Connection error",false);log("WebSocket error. Try reconnecting.")};
+ ws.onclose=()=>{running=false;setStatus("Disconnected",false)};
+}
+function setStatus(t,on){document.getElementById("connection").textContent=t;document.getElementById("dot").className=on?"dot on":"dot"}
+function render(){
+ const eq=equity(), dd=START-eq;
+ document.getElementById("equity").textContent=money(eq);
+ document.getElementById("cash").textContent=money(state.cash);
+ document.getElementById("realised").textContent=money(state.realised);
+ document.getElementById("drawdown").textContent=money(dd);
+ document.getElementById("drawdown").className="metric "+(dd>0?"red":"green");
+ document.getElementById("markets").innerHTML=SYMBOLS.map(s=>{let m=markets[s],p=state.positions[s];return `<tr><td>${s}</td><td>${m.price?money(m.price):"—"}</td><td>${m.signal}</td><td>${p?"OPEN":"—"}</td></tr>`}).join("");
+ let pos=Object.entries(state.positions);
+ document.getElementById("positions").innerHTML=pos.length?pos.map(([s,p])=>{let px=markets[s].price||p.entry;let pl=p.qty*px*(1-SLIPPAGE)*(1-FEE)-p.cost;return `<tr><td>${s}</td><td>${p.entry.toFixed(4)}</td><td>${money(p.cost)}</td><td class="${pl>=0?"green":"red"}">${money(pl)}</td></tr>`}).join(""):'<tr><td colspan="4" class="muted">No open positions</td></tr>';
+ document.getElementById("trades").innerHTML=state.trades.length?state.trades.slice(0,15).map(t=>`<tr><td>${t.s}</td><td>${t.entry.toFixed(4)} → ${t.exit.toFixed(4)}</td><td class="${t.net>=0?"green":"red"}">${money(t.net)}</td><td>${t.reason}</td></tr>`).join(""):'<tr><td colspan="4" class="muted">No closed trades yet</td></tr>';
+ document.getElementById("pause").textContent=paused?"Resume strategy":"Pause strategy";
+}
+function renderLog(){document.getElementById("log").innerHTML=state.log.map(x=>`<div>${x}</div>`).join("")}
+document.getElementById("connect").onclick=connect;
+document.getElementById("pause").onclick=()=>{paused=!paused;log(paused?"Strategy paused. Market feed remains connected.":"Strategy resumed.");render()};
+document.getElementById("reset").onclick=()=>{if(confirm("Erase all simulated trades and reset the virtual account to $10,000?")){state=fresh();paused=false;save();log("Paper account reset.");render()}};
+render();renderLog();
+if(state.halted)log("Safety halt is active from the saved paper account. Reset to restart.");
+})();
+</script>
+</body></html>
